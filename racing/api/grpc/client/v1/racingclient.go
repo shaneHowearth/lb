@@ -40,7 +40,7 @@ func (rc *RacingClient) CreateRaces(races *proto.Races) *proto.Acknowledgement {
 }
 
 // GetRaces -
-func (rc *RacingClient) GetRaces(req *proto.RacesRequest) *proto.Races {
+func (rc *RacingClient) GetRaces(req *proto.RacesRequest) (*proto.Races, error) {
 	c, conn := rc.newConnection()
 	defer conn.Close()
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -48,9 +48,8 @@ func (rc *RacingClient) GetRaces(req *proto.RacesRequest) *proto.Races {
 
 	races, err := c.GetRaces(ctx, req)
 	if err != nil {
-
 		races = &proto.Races{}
 	}
-	return races
+	return races, err
 
 }
