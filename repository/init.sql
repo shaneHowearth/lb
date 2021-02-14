@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS race_summaries
 	race_name TEXT,
 	race_number int,
 	venue_country TEXT,
-	venue_id, TEXT,
+	venue_id TEXT,
 	venue_name TEXT,
 	venue_state TEXT,
 );
