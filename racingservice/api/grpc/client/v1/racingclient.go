@@ -16,6 +16,7 @@ type RacingClient struct {
 }
 
 func (rc *RacingClient) newConnection() (proto.RacingServiceClient, *grpc.ClientConn) {
+	log.Printf("New connection address %s", rc.Address)
 	// Set up a connection to the server.
 	conn, err := grpc.Dial(rc.Address, grpc.WithInsecure())
 	if err != nil {
@@ -41,6 +42,7 @@ func (rc *RacingClient) CreateRaces(races *proto.Races) *proto.Acknowledgement {
 
 // GetRaces -
 func (rc *RacingClient) GetRaces(req *proto.RacesRequest) (*proto.Races, error) {
+	log.Printf("RacingClient GetRaces received req: %v", req)
 	c, conn := rc.newConnection()
 	defer conn.Close()
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
