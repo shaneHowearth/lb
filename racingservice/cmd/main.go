@@ -43,6 +43,7 @@ func main() {
 
 	// gRPC service
 	portNum := os.Getenv("PORT_NUM")
+	log.Printf("Racing Service listening on %s", portNum)
 	lis, err := net.Listen("tcp", "0.0.0.0:"+portNum)
 	if err != nil {
 		log.Fatalf("Failed to listen: %v", err)

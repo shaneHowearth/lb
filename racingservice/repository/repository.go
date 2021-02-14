@@ -13,7 +13,7 @@ type Store interface {
 
 // Retrieve - Retrieve a previously stored race summary
 type Retrieve interface {
-	GetRaces([]string) ([]RaceSummary, error)
+	GetRaces(string, int64, []string) ([]RaceSummary, error)
 }
 
 // RaceSummary - DTO
