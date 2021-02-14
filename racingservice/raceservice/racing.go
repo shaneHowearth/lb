@@ -37,10 +37,13 @@ func (s *Server) GetRaces(ctx context.Context, req *grpc.RacesRequest) (*grpc.Ra
 	log.Printf("RacingRANDOMMARKER received request %v", req)
 	// Database lookup
 	method := req.Method
+	if method != "nextraces-category-group" {
+		return nil, fmt.Errorf("unimplemented method")
+	}
 	count := req.Count
 	categories := req.Categories
 
-	raceSummaries, err := s.Retrieve.GetRaces(method, count, categories)
+	raceSummaries, err := s.Retrieve.GetNextRaces(count, categories)
 	// convert DTO to grpc object
 	races := &grpc.Races{}
 	for idx := range raceSummaries {
