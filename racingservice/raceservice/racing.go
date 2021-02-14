@@ -34,7 +34,7 @@ func NewRacingService(store repository.Store, retrieve repository.Retrieve) (*Se
 
 // GetRaces -
 func (s *Server) GetRaces(ctx context.Context, req *grpc.RacesRequest) (*grpc.Races, error) {
-
+	log.Printf("Racing&^%$ received request %v", req)
 	return &grpc.Races{}, nil
 }
 

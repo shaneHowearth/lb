@@ -3,7 +3,6 @@ package postgres
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"log"
 	"math/rand"
@@ -11,7 +10,7 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v4/pgxpool"
-	"github.com/shanehowearth/lb/racing/repository"
+	"github.com/shanehowearth/lb/racingservice/repository"
 )
 
 // Postgres -
@@ -22,7 +21,7 @@ type Postgres struct {
 }
 
 // Expose sql.Open to testing within this package
-var sqlOpen = sql.Open
+// var sqlOpen = sql.Open
 
 // Connect - Create the connection to the database
 func (p *Postgres) Connect() (err error) {
@@ -74,7 +73,12 @@ func (p *Postgres) CreateRaces(races []repository.RaceSummary) error {
 	}
 	// Rollback is fine even on success (There'll be nothing to rollback after
 	// the commit)
-	defer tx.Rollback(context.Background())
+	defer func() {
+		txErr := tx.Rollback(context.Background())
+		if txErr != nil {
+			log.Printf("Error generated when rolling back transaction %v", txErr)
+		}
+	}()
 
 	for _, race := range races {
 		// Weather Conditions
@@ -118,6 +122,7 @@ func (p *Postgres) CreateRaces(races []repository.RaceSummary) error {
 
 // GetRaces -
 func (p *Postgres) GetRaces(races []string) ([]repository.RaceSummary, error) {
+	log.Printf("Postgres GetRaces called with %v", races)
 	if p.pool == nil {
 		perr := p.Connect()
 		if perr != nil {
@@ -236,5 +241,6 @@ func (p *Postgres) GetRaces(races []string) ([]repository.RaceSummary, error) {
 		rs.RaceForm.Weather.ShortName = weather.ShortName
 		results = append(results, rs)
 	}
+	log.Printf("Postgres returning results %v", results)
 	return results, nil
 }
