@@ -18,14 +18,10 @@ CREATE TABLE IF NOT EXISTS race_summaries
 	venue_name TEXT,
 	venue_state TEXT
 );
-	/* title TEXT, */
-	/* pub_date DATE, */
-	/* body TEXT, */
-	/* tags TEXT[] */
 CREATE TABLE IF NOT EXISTS race_forms
 (
 	id SERIAL PRIMARY KEY,
-	distance int
+	distance int,
 	distance_type_id TEXT,
 	generated TEXT,
 	race_comment TEXT,
