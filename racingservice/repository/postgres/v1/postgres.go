@@ -148,7 +148,7 @@ func (p *Postgres) GetNextRaces(count int64, races []string) ([]repository.RaceS
 		VenueState   string `db:"venue_state"`
 	}
 	// Race summary
-	err := p.pool.QueryRow(context.Background(), "SELECT id, advertised_start, category_id, meeting_id, meeting_name, race_form, race_id, race_name, race_number, venue_country, venue_id, venue_name, venue_state FROM race_summaries WHERE id IN $1 LIMIT $2", races, count).Scan(&summary)
+	err := p.pool.QueryRow(context.Background(), "SELECT id, advertised_start, category_id, meeting_id, meeting_name, race_form, race_id, race_name, race_number, venue_country, venue_id, venue_name, venue_state FROM race_summaries WHERE id = ANY ($1) LIMIT $2", races, count).Scan(&summary)
 	if err != nil {
 		return []repository.RaceSummary{}, fmt.Errorf("unable to fetch summary with id %s failed: %w", races, err)
 	}
