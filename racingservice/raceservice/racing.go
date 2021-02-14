@@ -7,8 +7,8 @@ import (
 	"log"
 
 	"github.com/google/uuid"
-	grpc "github.com/shanehowearth/lb/racing/api/grpc/service/v1"
-	"github.com/shanehowearth/lb/racing/repository"
+	grpc "github.com/shanehowearth/lb/racingservice/api/grpc/service/v1"
+	"github.com/shanehowearth/lb/racingservice/repository"
 )
 
 // Server -
@@ -35,7 +35,7 @@ func NewRacingService(store repository.Store, retrieve repository.Retrieve) (*Se
 // GetRaces -
 func (s *Server) GetRaces(ctx context.Context, req *grpc.RacesRequest) (*grpc.Races, error) {
 
-	return nil, nil
+	return &grpc.Races{}, nil
 }
 
 // CreateRaces -
