@@ -34,8 +34,63 @@ func NewRacingService(store repository.Store, retrieve repository.Retrieve) (*Se
 
 // GetRaces -
 func (s *Server) GetRaces(ctx context.Context, req *grpc.RacesRequest) (*grpc.Races, error) {
-	log.Printf("Racing&^%$ received request %v", req)
-	return &grpc.Races{}, nil
+	log.Printf("RacingRANDOMMARKER received request %v", req)
+	// Database lookup
+	method := req.Method
+	count := req.Count
+	categories := req.Categories
+
+	raceSummaries, err := s.Retrieve.GetRaces(method, count, categories)
+	// convert DTO to grpc object
+	races := &grpc.Races{}
+	for idx := range raceSummaries {
+		race := grpc.Race{}
+		race.Categoryid = raceSummaries[idx].CategoryID
+		race.Key = raceSummaries[idx].ID
+		race.Advertisedstart.Seconds = int64(raceSummaries[idx].AdvertisedStart.Seconds)
+		race.Categoryid = raceSummaries[idx].CategoryID
+		race.Meetingid = raceSummaries[idx].MeetingID
+		race.Meetingname = raceSummaries[idx].MeetingName
+		/*Key
+		  Advertisedstart  RaceForm    struct {
+		  Categoryid       	AdditionalData
+		  Meetingid        	Distance
+		  Meetingname      	DistanceType   struct {
+		  Raceform         		ID
+		  Raceid           		Name
+		  Racename         		ShortName
+		  Racenumber       	}
+		  Venuecountry     	DistanceTypeID
+		  Venueid          	Generated
+		  Venuename        	RaceComment
+		  Venuestate       	RaceCommentAlternative
+				SilkBaseURL
+				TrackCondition         struct {
+					ID
+					Name
+					ShortName
+				}
+				TrackConditionID
+				Weather          struct {
+					IconURI
+					ID
+					Name
+					ShortName
+				}
+				WeatherID
+			}
+		*/
+		// race.RaceFormID = raceSummaries[idx].RaceFormID
+		race.Raceid = raceSummaries[idx].RaceID
+		race.Racename = raceSummaries[idx].RaceName
+		race.Racenumber = int64(raceSummaries[idx].RaceNumber)
+		race.Venuecountry = raceSummaries[idx].VenueCountry
+		race.Venueid = raceSummaries[idx].VenueID
+		race.Venuename = raceSummaries[idx].VenueName
+		race.Venuestate = raceSummaries[idx].VenueState
+		races.Races = append(races.Races, &race)
+	}
+	return races, err
 }
 
 // CreateRaces -
