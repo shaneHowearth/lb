@@ -120,8 +120,8 @@ func (p *Postgres) CreateRaces(races []repository.RaceSummary) error {
 	return nil
 }
 
-// GetRaces -
-func (p *Postgres) GetRaces(races []string) ([]repository.RaceSummary, error) {
+// GetNextRaces -
+func (p *Postgres) GetNextRaces(count int64, races []string) ([]repository.RaceSummary, error) {
 	log.Printf("Postgres GetRaces called with %v", races)
 	if p.pool == nil {
 		perr := p.Connect()
@@ -132,28 +132,28 @@ func (p *Postgres) GetRaces(races []string) ([]repository.RaceSummary, error) {
 	}
 	results := []repository.RaceSummary{}
 
-	for _, race := range races {
-		// Race summary
-		var summary struct {
-			ID           string `db:"id"`
-			Seconds      int    `db:"advertised_start"`
-			CategoryID   string `db:"category_id"`
-			MeetingID    string `db:"meeting_id"`
-			MeetingName  string `db:"meeting_name"`
-			RaceFormID   string `db:"race_form"`
-			RaceID       string `db:"race_id"`
-			RaceName     string `db:"race_name"`
-			RaceNumber   int    `db:"race_number"`
-			VenueCountry string `db:"venue_country"`
-			VenueID      string `db:"venue_id"`
-			VenueName    string `db:"venue_name"`
-			VenueState   string `db:"venue_state"`
-		}
-		err := p.pool.QueryRow(context.Background(), "SELECT id, advertised_start, category_id, meeting_id, meeting_name, race_form, race_id, race_name, race_number, venue_country, venue_id, venue_name, venue_state FROM race_summaries WHERE id=$1", race).Scan(&summary)
-		if err != nil {
-			return []repository.RaceSummary{}, fmt.Errorf("unable to fetch summary with id %s failed: %w", race, err)
-		}
+	var summary []struct {
+		ID           string `db:"id"`
+		Seconds      int    `db:"advertised_start"`
+		CategoryID   string `db:"category_id"`
+		MeetingID    string `db:"meeting_id"`
+		MeetingName  string `db:"meeting_name"`
+		RaceFormID   string `db:"race_form"`
+		RaceID       string `db:"race_id"`
+		RaceName     string `db:"race_name"`
+		RaceNumber   int    `db:"race_number"`
+		VenueCountry string `db:"venue_country"`
+		VenueID      string `db:"venue_id"`
+		VenueName    string `db:"venue_name"`
+		VenueState   string `db:"venue_state"`
+	}
+	// Race summary
+	err := p.pool.QueryRow(context.Background(), "SELECT id, advertised_start, category_id, meeting_id, meeting_name, race_form, race_id, race_name, race_number, venue_country, venue_id, venue_name, venue_state FROM race_summaries WHERE id IN $1 LIMIT $2", races, count).Scan(&summary)
+	if err != nil {
+		return []repository.RaceSummary{}, fmt.Errorf("unable to fetch summary with id %s failed: %w", races, err)
+	}
 
+	for idx := range summary {
 		// Raceform
 		var raceform struct {
 			ID                     string `db:"id"`
@@ -167,9 +167,9 @@ func (p *Postgres) GetRaces(races []string) ([]repository.RaceSummary, error) {
 			TrackConditionID       string `db:"track_condition_id"`
 			WeatherID              string `db:"weather_id"`
 		}
-		err = p.pool.QueryRow(context.Background(), "SELECT id, additional_data, distance, distance_type_id, generated, race_comment, race_comment_alternative, silk_base_url, track_condition_id, weather_id FROM race_forms WHERE id=$1", summary.RaceFormID).Scan(&raceform)
+		err = p.pool.QueryRow(context.Background(), "SELECT id, additional_data, distance, distance_type_id, generated, race_comment, race_comment_alternative, silk_base_url, track_condition_id, weather_id FROM race_forms WHERE id=$1", summary[idx].RaceFormID).Scan(&raceform)
 		if err != nil {
-			return []repository.RaceSummary{}, fmt.Errorf("unable to fetch raceform with id %s failed: %w", summary.RaceFormID, err)
+			return []repository.RaceSummary{}, fmt.Errorf("unable to fetch raceform with id %s failed: %w", summary[idx].RaceFormID, err)
 		}
 
 		// Distance type
@@ -207,19 +207,19 @@ func (p *Postgres) GetRaces(races []string) ([]repository.RaceSummary, error) {
 		}
 		// Put all the data into the DTO
 		rs := repository.RaceSummary{}
-		rs.ID = summary.ID
-		rs.AdvertisedStart.Seconds = summary.Seconds
-		rs.CategoryID = summary.CategoryID
-		rs.MeetingID = summary.MeetingID
-		rs.MeetingName = summary.MeetingName
-		rs.RaceFormID = summary.RaceFormID
-		rs.RaceID = summary.RaceID
-		rs.RaceName = summary.RaceName
-		rs.RaceNumber = summary.RaceNumber
-		rs.VenueCountry = summary.VenueCountry
-		rs.VenueID = summary.VenueID
-		rs.VenueName = summary.VenueName
-		rs.VenueState = summary.VenueState
+		rs.ID = summary[idx].ID
+		rs.AdvertisedStart.Seconds = summary[idx].Seconds
+		rs.CategoryID = summary[idx].CategoryID
+		rs.MeetingID = summary[idx].MeetingID
+		rs.MeetingName = summary[idx].MeetingName
+		rs.RaceFormID = summary[idx].RaceFormID
+		rs.RaceID = summary[idx].RaceID
+		rs.RaceName = summary[idx].RaceName
+		rs.RaceNumber = summary[idx].RaceNumber
+		rs.VenueCountry = summary[idx].VenueCountry
+		rs.VenueID = summary[idx].VenueID
+		rs.VenueName = summary[idx].VenueName
+		rs.VenueState = summary[idx].VenueState
 		rs.RaceForm.AdditionalData = raceform.AdditionalData
 		rs.RaceForm.Distance = raceform.Distance
 		rs.RaceForm.DistanceTypeID = raceform.DistanceTypeID
