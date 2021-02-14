@@ -16,7 +16,7 @@ services:
     racingservice:
         build: racingservice/
         environment:
-            - DBURI=postgres://ladbrokes:hu8jmn3@articledb:5432/race_data_db?sslmode=disable
+            - DBURI=postgres://ladbrokes:hu8jmn3@racingdb:5432/race_data_db?sslmode=disable
             - PORT_NUM=5200
         ports:
             - "5200"
